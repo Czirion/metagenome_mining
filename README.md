@@ -5,6 +5,6 @@ This project aims to search for unique BGCs in a collection of metagenomes obtai
 ~~~
 bash script_1.sh
 ~~~
-{: .bash}
+
 
 
