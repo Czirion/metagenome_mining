@@ -1,3 +1,5 @@
+# BGC Mining
+
 # Download genomes from NCBI
 In the [Assembly database](https://www.ncbi.nlm.nih.gov/assembly) of the NCBI search the genomes of interest.
 Apply the required filters and select Download Assemblies, and choose RefSeq
