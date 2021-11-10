@@ -2,15 +2,19 @@
 
 # Download genomes from NCBI
 In the [Assembly database](https://www.ncbi.nlm.nih.gov/assembly) of the NCBI search the genomes of interest.
-Apply the required filters and select Download Assemblies, and choose RefSeq
+Apply the required filters and select Download Assemblies, choosing RefSeq as a source.
 
-Move all genomes to folder named `fasta/`
+Move all genomes to folder named `fasta/` and decompress them:
 ~~~
 gunzip *
 ~~~
 
-Change the file names to their accesion numbers
-Check the number of files before and after the name change
+Check the number of files before and after the name change:
+~~~
+ls | wc -l
+~~~
+
+Change the file names to their accesion numbers:
 ~~~
 for file in *.fna 
 do
@@ -20,49 +24,57 @@ do
 done
 ~~~
 
-Make a file with the accesion numbers and genome names
+Make a file with the accesion numbers and genome names:
 ~~~
 head -n1 *.fasta | grep -v "==" | grep ">" > genome_names.txt
 ~~~
 
 # Prepare for RAST submition
 Edit with Openrefine `genome_names.txt`, it shoud have the following columns: Accessions, Filenames, Species
-    The Filenames column hast the .fasta extension
-    It does not have '' or () or . 
-    In the Filename column the genus, species and strain are separated with _ : There are no _ inside the strain code
-    In the species column the genus, species and strain fields are separated with a space
-    It should be saved as TSV
-    Names of the species in the IdsFile do not have be completely in lowercase (strain codes can be in uppercase)
+    * The Filenames column must has the .fasta extension
+    * It must not have `''`, `()` or `.` 
+    * In the Filename column the genus, species and strain are separated with _ 
+    * There are no _ inside the strain code
+    * In the species column the genus, species and strain fields are separated with a space
+    * It should be saved as TSV
+    * Names of the species in the IdsFile do not have be completely in lowercase (strain codes can be in uppercase)
 
-To change the accession names for the new names using the `genome_names.tsv`
+To change the accession names for the new names using the `genome_names.tsv`:
 ~~~
 cat genome_names.tsv| while read line ; do old=$(echo $line | cut -d' ' -f1); new=$( echo $line | cut -d' ' -f2) ; mv $old.fasta $new ;done
 ~~~
 
-After changing the names remove the first column of the genome_names.tsv and reaname it to IdsFile
+After changing the names remove the first column of the `genome_names.tsv` and reaname it to `IdsFile`
 
 # Annotation with RAST 
 
 ### Submit fastas to RAST:
+Pull the myrast docker distribution:
+~~~
+docker pull nselem/myrast
+~~~
+
+Enter the myrast docker and sumbit the genomes:
 ~~~
 docker run -i -t -v $(pwd):/home nselem/myrast /bin/bash
 
-cat IdsFile | while read line; do id=$(echo $line|cut -d' ' -f1); name=$(echo $line|cut -d' ' -f2-5); echo svr_submit_RAST_job -user clauzirion -passwd fri3d3b3rg -fasta $id -domain Bacteria -bioname "${name}" -genetic_code 11 -gene_caller rast; svr_submit_RAST_job -user clauzirion -passwd fri3d3b3rg -fasta $id -domain Bacteria -bioname "$name" -genetic_code 11 -gene_caller rast; done
+cat IdsFile | while read line; do id=$(echo $line|cut -d' ' -f1); name=$(echo $line|cut -d' ' -f2-5); echo svr_submit_RAST_job -user <username> -passwd <password> -fasta $id -domain Bacteria -bioname "${name}" -genetic_code 11 -gene_caller rast; svr_submit_RAST_job -user <username> -passwd <password> -fasta $id -domain Bacteria -bioname "$name" -genetic_code 11 -gene_caller rast; done
 ~~~
 
-Copy in a spreadsheet the RAST/Jobs_Overview table: 
-    Keep only the JobIDs in the first column and the species names in the third column
-    Make a second column with the Filename column from the IdsFile
-    Make sure the JobId coincides with the appropriate filename
-    Save it as `Rast_ID.tsv`
+once the RAST run is finished, copy in a spreadsheet the RAST/Jobs_Overview table: 
+    * Keep only the JobIDs in the first column and the species names in the third column
+    * Make a second column with the Filename column from the IdsFile
+    * Make sure the JobId coincides with the appropriate filename
+    * Save it as `Rast_ID.tsv`
 
 
 ### Retrieve RAST.gbk
+
 ~~~
 mkdir gbks/
 cd gbks
 mv ../fasta/Rast_ID.tsv .
-cut -f1 Rast_ID.tsv | while read line; do svr_retrieve_RAST_job clauzirion fri3d3b3rg $line genbank > $line.gbk ; done
+cut -f1 Rast_ID.tsv | while read line; do svr_retrieve_RAST_job <username> <password> $line genbank > $line.gbk ; done
 ~~~
 
 Change names from JobId to genome name with the Rast_ID.tsv
@@ -75,7 +87,7 @@ cat Rast_ID.tsv| while read line ; do old=$(echo $line | cut -d' ' -f1); new=$(e
 mkdir aminoa
 cd aminoa
 mv ../gbks/Rast_ID.tsv .
-cut -f1 Rast_ID.tsv | while read line; do svr_retrieve_RAST_job clauzirion fri3d3b3rg $line amino_acid > $line.faa ; done
+cut -f1 Rast_ID.tsv | while read line; do svr_retrieve_RAST_job <username> <password> $line amino_acid > $line.faa ; done
 ~~~
 Change names from JobId to genome name with the Rast_ID.tsv
 ~~~
