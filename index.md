@@ -31,12 +31,19 @@ head -n1 *.fasta | grep -v "==" | grep ">" > genome_names.txt
 
 # Prepare for RAST submition
 Edit with Openrefine `genome_names.txt`, it shoud have the following columns: Accessions, Filenames, Species
+
     * The Filenames column must has the .fasta extension
+    
     * It must not have `''`, `()` or `.` 
+    
     * In the Filename column the genus, species and strain are separated with _ 
+    
     * There are no _ inside the strain code
+    
     * In the species column the genus, species and strain fields are separated with a space
+    
     * It should be saved as TSV
+    
     * Names of the species in the IdsFile do not have be completely in lowercase (strain codes can be in uppercase)
 
 To change the accession names for the new names using the `genome_names.tsv`:
