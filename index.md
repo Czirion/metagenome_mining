@@ -67,7 +67,7 @@ exit
 
 Once the RAST run is finished, copy in a spreadsheet the RAST/Jobs_Overview table: 
 - Keep only the JobIDs in the first column and the species names in the third column
-- Make a second column with the Filename column from the IdsFile
+- Make a second column with the Filename column from the `IdsFile`
 - Make sure the JobId coincides with the appropriate filename
 - Save it as `Rast_ID.tsv`
 
@@ -198,7 +198,7 @@ Click on region (BGC) of interest to open its complete BGC view
 Choose a gene to make the Corason from: Most likely the core gene, or one of the core genes
 Click on it and on AA sequence: Copy to clipboard
 Open a new empty plain text editor and add a line with the following info:
-- > 
+- `>` 
 - cds gene code (as in the Gene details box withtin antismash web)
 - additional gene name if there is one
 - region name (as shown in antismash web)
@@ -212,7 +212,7 @@ run_corason core_gene.fasta path/my_genomes/gbks/ path/my_genomes/gbks/genome_of
 ~~~
 
 Check the .BLAST file in the corason output to see in the bitscores are on a very broad range, if they are choose an appropriate cutoff to maintain only the highest bitscores
-Re-run corason with the same command but adding the bit score cutoff with the flag `-b` <cutoff_value>
+Re-run corason with the same command but adding the bit score cutoff with the flag `-b <cutoff_value>`
 
 
 
