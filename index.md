@@ -34,7 +34,7 @@ Edit with Openrefine `genome_names.txt`:
 - It shoud have the following columns: Accessions, Filenames, Species
 - The Filenames column must has the .fasta extension
 - It must not have `''`, `()` or `.` 
-- In the Filename column the genus, species and strain are separated with _ 
+- In the Filename column the genus, species and strain are separated with `_` 
 - There are no `_` inside the strain code
 - In the species column the genus, species and strain fields are separated with a space
 - It should be saved as TSV
@@ -60,13 +60,16 @@ Enter the myrast docker and sumbit the genomes:
 docker run -i -t -v $(pwd):/home nselem/myrast /bin/bash
 
 cat IdsFile | while read line; do id=$(echo $line|cut -d' ' -f1); name=$(echo $line|cut -d' ' -f2-5); echo svr_submit_RAST_job -user <username> -passwd <password> -fasta $id -domain Bacteria -bioname "${name}" -genetic_code 11 -gene_caller rast; svr_submit_RAST_job -user <username> -passwd <password> -fasta $id -domain Bacteria -bioname "$name" -genetic_code 11 -gene_caller rast; done
+
+# Wait until it has finished and exit:
+exit 
 ~~~
 
-once the RAST run is finished, copy in a spreadsheet the RAST/Jobs_Overview table: 
-    * Keep only the JobIDs in the first column and the species names in the third column
-    * Make a second column with the Filename column from the IdsFile
-    * Make sure the JobId coincides with the appropriate filename
-    * Save it as `Rast_ID.tsv`
+Once the RAST run is finished, copy in a spreadsheet the RAST/Jobs_Overview table: 
+- Keep only the JobIDs in the first column and the species names in the third column
+- Make a second column with the Filename column from the IdsFile
+- Make sure the JobId coincides with the appropriate filename
+- Save it as `Rast_ID.tsv`
 
 
 ### Retrieve RAST.gbk
@@ -75,7 +78,13 @@ once the RAST run is finished, copy in a spreadsheet the RAST/Jobs_Overview tabl
 mkdir gbks/
 cd gbks
 mv ../fasta/Rast_ID.tsv .
+
+docker run -i -t -v $(pwd):/home nselem/myrast /bin/bash
+
 cut -f1 Rast_ID.tsv | while read line; do svr_retrieve_RAST_job <username> <password> $line genbank > $line.gbk ; done
+
+# Wait until it has finished and exit:
+exit
 ~~~
 
 Change names from JobId to genome name with the Rast_ID.tsv
@@ -88,7 +97,13 @@ cat Rast_ID.tsv| while read line ; do old=$(echo $line | cut -d' ' -f1); new=$(e
 mkdir aminoa
 cd aminoa
 mv ../gbks/Rast_ID.tsv .
+
+docker run -i -t -v $(pwd):/home nselem/myrast /bin/bash
+
 cut -f1 Rast_ID.tsv | while read line; do svr_retrieve_RAST_job <username> <password> $line amino_acid > $line.faa ; done
+
+# Wait until it has finished and exit:
+exit
 ~~~
 Change names from JobId to genome name with the Rast_ID.tsv
 ~~~
@@ -143,7 +158,7 @@ Add the name of the genome to the bgc filenames so they do not overwrite if name
 ls -1 output*/*region*gbk | while read line; do dir=$(echo $line | cut -d'/' -f1); file=$(echo $line | cut -d'/' -f2); for directory in $dir; do cd $directory; pwd ; newfile=$(echo $dir-$file |cut -d'_' -f1 --complement); echo $file $newfile ; mv $file $newfile ; cd .. ; done; done
 ~~~
 
-Copy all antismash-generated gbks to the bgcs_gbks/
+Copy all antismash-generated gbks to the `bgcs_gbks/`
 ~~~
 scp antismash/output_*/*region*.gbk bigscape/bgcs_gbks/ 
 ~~~
@@ -158,9 +173,9 @@ Go to the bigscape folder
 cd bigscape
 ~~~
 
-We need the --hybrids-off flag to avoid repeated BGCs in different Classes (because there are BGCs that may fit in different classes)
-Optional: The --mix flag is to make an extra analysis with all the BGCs together (i.e. not separated in classes)
-Optional: The --cutoffs flag is to make the entire analysis several times with different cuttof values (the default is 0.3)
+We need the `--hybrids-off` flag to avoid repeated BGCs in different Classes (because there are BGCs that may fit in different classes)
+Optional: The `--mix` flag is to make an extra analysis with all the BGCs together (i.e. not separated in classes)
+Optional: The `--cutoffs` flag is to make the entire analysis several times with different cuttof values (the default is 0.3)
 ~~~
 run_bigscape bgcs_gbks/ output_<date> --hybrids-off --mix --cutoffs 0.1 0.2 0.3 0.5 0.7 0.9 # Run bigscape
 ~~~
@@ -183,21 +198,21 @@ Click on region (BGC) of interest to open its complete BGC view
 Choose a gene to make the Corason from: Most likely the core gene, or one of the core genes
 Click on it and on AA sequence: Copy to clipboard
 Open a new empty plain text editor and add a line with the following info:
-     > 
-     cds gene code (as in the Gene details box withtin antismash web)
-     additional gene name if there is one
-     region name (as shown in antismash web)
-     additional bgc name if there is one
-     name of genome of origin
-Then paste the sequence and save it in the corason folder with .fasta extension
+- > 
+- cds gene code (as in the Gene details box withtin antismash web)
+- additional gene name if there is one
+- region name (as shown in antismash web)
+- additional bgc name if there is one
+- name of genome of origin
+Then paste the sequence and save it in the corason folder with `.fasta` extension
 
-If the genomes are in gbk format you need the -g flag
+If the genomes are in gbk format you need the `-g` flag
 ~~~
 run_corason core_gene.fasta path/my_genomes/gbks/ path/my_genomes/gbks/genome_of_interest -g
 ~~~
 
 Check the .BLAST file in the corason output to see in the bitscores are on a very broad range, if they are choose an appropriate cutoff to maintain only the highest bitscores
-Re-run corason with the same command but adding the bit score cutoff with the flag -b cutoff_value
+Re-run corason with the same command but adding the bit score cutoff with the flag `-b` <cutoff_value>
 
 
 
