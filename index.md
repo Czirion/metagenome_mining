@@ -127,7 +127,7 @@ mkdir -p antismash/output_${prefix}
 ## If the organism is fungal use --taxon fungi
 ## If input is in fasta format use --genefinding-tool=glimmerhmm (for eukaryotic organism) or --genefinding-tool=prodigal (for prokaryotic organism)
 ## If input is in gff3 format use --genefinding-gff3
-antismash --output-dir antismash/output_${prefix}/ --genefinding-tool=none ${genome}
+antismash --output-dir antismash/output_${prefix}/ --genefinding-tool=none ${genome} --cb-general --cb-subclusters --cb-knownclusters --cc-mibig --html-start-compact
 ~~~
 
 Commands to run run_antismash.sh 
